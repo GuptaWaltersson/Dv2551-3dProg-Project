@@ -28,7 +28,7 @@ bool SetupWindow(HINSTANCE instance, UINT width, UINT height, int nCmdShow, HWND
 
     RegisterClass(&wc);
 
-    window = CreateWindowEx(0, CLASS_NAME, L"GUPTA WINDOW", WS_OVERLAPPEDWINDOW,
+    window = CreateWindowEx(0, CLASS_NAME, L"LE TRE DE PROJECTEEE WINDOWEEE", WS_OVERLAPPEDWINDOW,
         CW_USEDEFAULT, 0, width, height, nullptr, nullptr, instance, nullptr);
 
     if (window == nullptr)
