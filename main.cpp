@@ -19,9 +19,15 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
     std::cout << "Hello World" << std::endl;
     Renderer renderer;
     renderer.Setup(hInstance, nCmdShow, 1080, 720);
-    while (1)
-    {
 
+    MSG msg = {};
+    while (msg.message != WM_QUIT && !(GetKeyState(VK_ESCAPE) & 0x8000))
+    {
+        if (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
+        {
+            TranslateMessage(&msg);
+            DispatchMessage(&msg);
+        }
     }
     return 0;
 }
