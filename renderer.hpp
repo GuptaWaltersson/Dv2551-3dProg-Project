@@ -6,7 +6,8 @@ public:
 	Renderer();
 	~Renderer();
 	
-	bool Setup();
+	bool Setup(HINSTANCE hinstance, int nCmdShow, size_t window_width, size_t window_height);
 private:
+	HWND m_window = nullptr;
 
 };
