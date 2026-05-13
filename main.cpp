@@ -17,6 +17,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
     freopen_s((FILE**)stdin, "CONIN$", "r", stdin);
 #endif
     std::cout << "Hello World" << std::endl;
+
     Renderer renderer;
     renderer.Setup(hInstance, nCmdShow, 1080, 720);
 

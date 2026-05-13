@@ -127,12 +127,18 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="camera.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="ParticleCollection.cpp" />
     <ClCompile Include="renderer.cpp" />
+    <ClCompile Include="structuredBuffer.cpp" />
     <ClCompile Include="windowhelper.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="camera.hpp" />
+    <ClInclude Include="ParticleCollection.hpp" />
     <ClInclude Include="renderer.hpp" />
+    <ClInclude Include="structuredBuffer.hpp" />
     <ClInclude Include="windowhelper.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
