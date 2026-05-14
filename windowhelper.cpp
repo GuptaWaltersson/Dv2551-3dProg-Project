@@ -38,6 +38,6 @@ bool SetupWindow(HINSTANCE instance, UINT width, UINT height, int nCmdShow, HWND
     }
 
     ShowWindow(window, nCmdShow);
-    ShowCursor(FALSE);
+    //ShowCursor(FALSE);
     return true;
 }
