@@ -57,8 +57,7 @@ bool Renderer::Setup(HINSTANCE instance, int nCmdShow, size_t window_width, size
 
 
 
-	m_SrvUavdescriptorSize = m_device->GetDescriptorHandleIncrementSize(
-		D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+	m_SrvUavdescriptorSize = m_device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 	m_rtvdescriptorSize = m_device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
 
 	D3D12_DESCRIPTOR_HEAP_DESC heapDesc = {};
@@ -82,10 +81,132 @@ bool Renderer::Setup(HINSTANCE instance, int nCmdShow, size_t window_width, size
 
 	D3D12_CPU_DESCRIPTOR_HANDLE srvHandle = allocateSrvUavDescriptor();
 	D3D12_CPU_DESCRIPTOR_HANDLE uavHandle = allocateSrvUavDescriptor();
+
+	for (UINT i = 0; i < FrameCount; i++)
+	{
+		hr = m_swapChain->GetBuffer(i,IID_PPV_ARGS(&m_backBuffers[i]));
+
+		if (FAILED(hr))
+		{
+			std::cout << "[RENDERER] Failed to get back buffer" << std::endl;
+			return false;
+		}
+
+		m_rtvHandles[i] = allocateRtvDescriptor();
+
+		m_device->CreateRenderTargetView(m_backBuffers[i].Get(), nullptr, m_rtvHandles[i]);
+	}
+
+	if (!createCommandAllocator())
+	{
+		std::cout << "[RENDERER] Failed to create command allocator" << std::endl;
+		return false;
+	}
+
+	if (!createCommandList())
+	{
+		std::cout << "[RENDERER] Failed to create command list" << std::endl;
+		return false;
+	}
+
+	if (!createFence())
+	{
+		std::cout << "[RENDERER] Failed to create fence" << std::endl;
+		return false;
+	}
+
+
 #ifdef Guptadebug
 	std::cout << "Renderer Setup success" << std::endl;
 #endif
 	return true;
+}
+
+void Renderer::renderFrame()
+{
+	m_commandAllocator->Reset();
+	m_commandList->Reset(m_commandAllocator.Get(), nullptr);
+
+	ID3D12Resource* currentBuffer = m_backBuffers[m_frameIndex].Get();
+	//Transistion
+
+	D3D12_RESOURCE_BARRIER barrier = {};
+
+	barrier.Type =
+		D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+
+	barrier.Transition.pResource =
+		currentBuffer;
+
+	barrier.Transition.StateBefore =
+		D3D12_RESOURCE_STATE_PRESENT;
+
+	barrier.Transition.StateAfter =
+		D3D12_RESOURCE_STATE_RENDER_TARGET;
+
+	barrier.Transition.Subresource =
+		D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
+	//Record
+	m_commandList->ResourceBarrier(1, &barrier);
+	m_commandList->OMSetRenderTargets(1, &m_rtvHandles[m_frameIndex], FALSE, nullptr);
+
+	//Choose background color
+	float clearColor[] =
+	{
+		0.1f,
+		0.1f,
+		0.6f,
+		1.0f
+	};
+	m_commandList->ClearRenderTargetView(m_rtvHandles[m_frameIndex], clearColor, 0, nullptr);
+
+	//Transition back
+	barrier.Transition.StateBefore =
+		D3D12_RESOURCE_STATE_RENDER_TARGET;
+
+	barrier.Transition.StateAfter =
+		D3D12_RESOURCE_STATE_PRESENT;
+
+	//Record
+	m_commandList->ResourceBarrier(
+		1,
+		&barrier);
+
+	m_commandList->Close();
+
+	// Execute all the commands recorded
+	ID3D12CommandList* lists[] =
+	{
+		m_commandList.Get()
+	};
+
+	m_directQueue->ExecuteCommandLists(
+		1,
+		lists);
+
+	//Present
+	m_swapChain->Present(
+		1,
+		0);
+
+	m_frameIndex =
+		m_swapChain->GetCurrentBackBufferIndex();
+	
+	// WE WILL REMOVE THIS SINCE IT IS NOT OKAY FOR ASSIGNMENT JUST BEGINNER VERSION
+	m_fenceValue++;
+
+	m_directQueue->Signal(m_fence.Get(),m_fenceValue);
+
+	if (m_fence->GetCompletedValue() < m_fenceValue)
+	{
+		m_fence->SetEventOnCompletion(
+			m_fenceValue,
+			m_fenceEvent);
+
+		WaitForSingleObject(
+			m_fenceEvent,
+			INFINITE);
+	}
 }
 
 bool Renderer::createFactory()
@@ -116,7 +237,6 @@ bool Renderer::createFactory()
 	}
 
 	return true;
-	return false;
 }
 
 bool Renderer::createDevice()
@@ -193,8 +313,46 @@ bool Renderer::createSwapchain()
 	{
 		return false;
 	}
+	
+
 	hr = swapChain1.As(&m_swapChain);
+	m_frameIndex =
+		m_swapChain->GetCurrentBackBufferIndex();
 	return SUCCEEDED(hr);
+}
+
+bool Renderer::createCommandAllocator()
+{
+	HRESULT hr = m_device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&m_commandAllocator));
+	return SUCCEEDED(hr);
+}
+
+bool Renderer::createCommandList()
+{
+	HRESULT hr = m_device->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, m_commandAllocator.Get(), nullptr, IID_PPV_ARGS(&m_commandList));
+	if (FAILED(hr))
+	{
+		return false;
+	}
+	m_commandList->Close();
+	return SUCCEEDED(hr);
+}
+
+bool Renderer::createFence()
+{
+	HRESULT hr = m_device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&m_fence));
+
+	if (FAILED(hr))
+	{
+		return false;
+	}
+	m_fenceEvent = CreateEvent(
+		nullptr,
+		FALSE,
+		FALSE,
+		nullptr);
+
+	return true;
 }
 
 D3D12_CPU_DESCRIPTOR_HANDLE Renderer::allocateSrvUavDescriptor()
@@ -203,7 +361,7 @@ D3D12_CPU_DESCRIPTOR_HANDLE Renderer::allocateSrvUavDescriptor()
 		m_srvUavHeap->GetCPUDescriptorHandleForHeapStart();
 
 	handle.ptr += m_SrvUavHeapOffset * m_SrvUavdescriptorSize;
-
+	m_SrvUavHeapOffset++;
 	return handle;
 }
 
@@ -211,5 +369,6 @@ D3D12_CPU_DESCRIPTOR_HANDLE Renderer::allocateRtvDescriptor()
 {
 	D3D12_CPU_DESCRIPTOR_HANDLE handle = m_rtvHeap->GetCPUDescriptorHandleForHeapStart();
 	handle.ptr += m_rtvHeapOffset * m_rtvdescriptorSize;
+	m_rtvHeapOffset++;
 	return handle;
 }

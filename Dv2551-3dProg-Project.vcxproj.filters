@@ -33,6 +33,9 @@
     <ClCompile Include="structuredBuffer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="vertexBuffer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="windowhelper.hpp">
@@ -50,5 +53,12 @@
     <ClInclude Include="structuredBuffer.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="vertexBuffer.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="vertexShader.hlsl" />
+    <FxCompile Include="pixelShader.hlsl" />
   </ItemGroup>
 </Project>

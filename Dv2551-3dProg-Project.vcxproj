@@ -132,6 +132,7 @@
     <ClCompile Include="ParticleCollection.cpp" />
     <ClCompile Include="renderer.cpp" />
     <ClCompile Include="structuredBuffer.cpp" />
+    <ClCompile Include="vertexBuffer.cpp" />
     <ClCompile Include="windowhelper.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -139,7 +140,20 @@
     <ClInclude Include="ParticleCollection.hpp" />
     <ClInclude Include="renderer.hpp" />
     <ClInclude Include="structuredBuffer.hpp" />
+    <ClInclude Include="vertexBuffer.hpp" />
     <ClInclude Include="windowhelper.hpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="pixelShader.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
+    </FxCompile>
+    <FxCompile Include="vertexShader.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
+    </FxCompile>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
