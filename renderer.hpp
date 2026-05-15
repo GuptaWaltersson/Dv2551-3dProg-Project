@@ -19,6 +19,7 @@ public:
 	bool createCommandQueue();
 	bool createSwapchain();
 	D3D12_CPU_DESCRIPTOR_HANDLE allocateSrvUavDescriptor();
+	D3D12_CPU_DESCRIPTOR_HANDLE allocateRtvDescriptor();
 private:
 	HWND m_window = nullptr;
 
@@ -28,6 +29,8 @@ private:
 	Microsoft::WRL::ComPtr<ID3D12Device> m_device;
 	Microsoft::WRL::ComPtr<IDXGIFactory4> m_factory;
 	Microsoft::WRL::ComPtr<IDXGISwapChain4> m_swapChain;
+	static constexpr UINT FrameCount = 2;
+	Microsoft::WRL::ComPtr<ID3D12Resource> m_backBuffers[FrameCount];
 
 	Microsoft::WRL::ComPtr<ID3D12CommandQueue> m_directQueue; // Rendering 
 	Microsoft::WRL::ComPtr<ID3D12CommandQueue> m_computeQueue; // Compute / Particle simulation

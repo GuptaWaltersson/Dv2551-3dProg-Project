@@ -50,8 +50,16 @@ bool Renderer::Setup(HINSTANCE instance, int nCmdShow, size_t window_width, size
 		return false;
 	}
 
+	for (UINT i = 0; i < FrameCount; i++)
+	{
+		m_swapChain->GetBuffer(i, IID_PPV_ARGS(&m_backBuffers[i]));
+	}
+
+
+
 	m_SrvUavdescriptorSize = m_device->GetDescriptorHandleIncrementSize(
 		D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+	m_rtvdescriptorSize = m_device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
 
 	D3D12_DESCRIPTOR_HEAP_DESC heapDesc = {};
 	heapDesc.NumDescriptors = 100;
@@ -59,8 +67,15 @@ bool Renderer::Setup(HINSTANCE instance, int nCmdShow, size_t window_width, size
 	heapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
 	HRESULT hr = m_device->CreateDescriptorHeap(&heapDesc, IID_PPV_ARGS(&m_srvUavHeap));
 	if (FAILED(hr)) {
-		std::cout << "[RENDERER] Failed to create descriptor heap" << std::endl;
+		std::cout << "[RENDERER] Failed to create srv uav descriptor heap" << std::endl;
 		return false;
+	}
+
+	heapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
+	hr = m_device->CreateDescriptorHeap(&heapDesc, IID_PPV_ARGS(&m_rtvHeap));
+	if (FAILED(hr))
+	{
+		std::cout << "[RENDERER] Failed to create rtv descriptor heap" << std::endl;
 	}
 
 	D3D12_CPU_DESCRIPTOR_HANDLE srvHandle = allocateSrvUavDescriptor();
@@ -187,5 +202,12 @@ D3D12_CPU_DESCRIPTOR_HANDLE Renderer::allocateSrvUavDescriptor()
 
 	handle.ptr += m_SrvUavHeapOffset * m_SrvUavdescriptorSize;
 
-	return D3D12_CPU_DESCRIPTOR_HANDLE();
+	return handle;
+}
+
+D3D12_CPU_DESCRIPTOR_HANDLE Renderer::allocateRtvDescriptor()
+{
+	D3D12_CPU_DESCRIPTOR_HANDLE handle = m_rtvHeap->GetCPUDescriptorHandleForHeapStart();
+	handle.ptr += m_rtvHeapOffset * m_rtvdescriptorSize;
+	return handle;
 }
