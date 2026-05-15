@@ -72,10 +72,12 @@ bool Renderer::Setup(HINSTANCE instance, int nCmdShow, size_t window_width, size
 	}
 
 	heapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
+	heapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
 	hr = m_device->CreateDescriptorHeap(&heapDesc, IID_PPV_ARGS(&m_rtvHeap));
 	if (FAILED(hr))
 	{
 		std::cout << "[RENDERER] Failed to create rtv descriptor heap" << std::endl;
+		return false;
 	}
 
 	D3D12_CPU_DESCRIPTOR_HANDLE srvHandle = allocateSrvUavDescriptor();
