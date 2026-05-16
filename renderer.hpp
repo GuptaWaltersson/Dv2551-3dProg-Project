@@ -25,7 +25,7 @@ public:
 	bool createCommandAllocator();
 	bool createCommandList();
 	bool createFence();
-
+	bool createRootSignature();
 
 	D3D12_CPU_DESCRIPTOR_HANDLE allocateSrvUavDescriptor();
 	D3D12_CPU_DESCRIPTOR_HANDLE allocateRtvDescriptor();
@@ -62,5 +62,7 @@ private:
 	Microsoft::WRL::ComPtr<ID3D12Fence> m_fence;
 	UINT m_fenceValue = 0;
 	HANDLE m_fenceEvent;
+
+	Microsoft::WRL::ComPtr<ID3D12RootSignature> m_rootSignature;
 
 };

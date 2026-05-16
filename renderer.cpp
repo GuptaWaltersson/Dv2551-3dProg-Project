@@ -4,7 +4,7 @@
 #include <iostream>
 #include <d3d12.h>
 #include <wrl.h>
-
+#include "Shader.hpp"
 
 #define Guptadebug
 Renderer::Renderer()
@@ -115,7 +115,11 @@ bool Renderer::Setup(HINSTANCE instance, int nCmdShow, size_t window_width, size
 		return false;
 	}
 
-
+	if (!createRootSignature())
+	{
+		std::cout << "[RENDERER] Failed to create root signature" << std::endl;
+		return false;
+	}
 #ifdef Guptadebug
 	std::cout << "Renderer Setup success" << std::endl;
 #endif
@@ -353,6 +357,25 @@ bool Renderer::createFence()
 		nullptr);
 
 	return true;
+}
+
+bool Renderer::createRootSignature()
+{
+	D3D12_ROOT_SIGNATURE_DESC rootDesc = {};
+
+	rootDesc.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
+	Microsoft::WRL::ComPtr<ID3DBlob> signature;
+	Microsoft::WRL::ComPtr<ID3DBlob> error;
+	
+
+	HRESULT hr = D3D12SerializeRootSignature(&rootDesc, D3D_ROOT_SIGNATURE_VERSION_1, &signature, &error);
+	if (FAILED(hr))
+	{
+		return false;
+	}
+
+	hr = m_device->CreateRootSignature(0, signature->GetBufferPointer(), signature->GetBufferSize(), IID_PPV_ARGS(&m_rootSignature));
+	return SUCCEEDED(hr);
 }
 
 D3D12_CPU_DESCRIPTOR_HANDLE Renderer::allocateSrvUavDescriptor()
