@@ -207,7 +207,7 @@ void Renderer::renderFrame()
 	{
 		0.1f,
 		0.1f,
-		0.6f,
+		0.1f,
 		1.0f
 	};
 	m_commandList->ClearRenderTargetView(m_rtvHandles[m_frameIndex], clearColor, 0, nullptr);
