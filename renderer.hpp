@@ -20,7 +20,7 @@ public:
 	bool Setup(HINSTANCE hinstance, int nCmdShow, size_t window_width, size_t window_height);
 
 	void renderFrame();
-
+	void waitForGpuShutdown();
 
 	bool createFactory();
 	bool createDevice();
@@ -53,7 +53,7 @@ private:
 	static constexpr UINT FrameCount = 2;
 	Microsoft::WRL::ComPtr<ID3D12Resource> m_backBuffers[FrameCount];
 
-	Microsoft::WRL::ComPtr<ID3D12CommandAllocator> m_commandAllocator;
+	Microsoft::WRL::ComPtr<ID3D12CommandAllocator> m_commandAllocators[FrameCount];
 	Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> m_commandList;
 	Microsoft::WRL::ComPtr<ID3D12CommandQueue> m_directQueue; // Rendering 
 	Microsoft::WRL::ComPtr<ID3D12CommandQueue> m_computeQueue; // Compute / Particle simulation
@@ -71,6 +71,7 @@ private:
 
 	Microsoft::WRL::ComPtr<ID3D12Fence> m_fence;
 	UINT m_fenceValue = 0;
+	UINT m_frameFenceValues[FrameCount] = {};
 	HANDLE m_fenceEvent;
 
 	Microsoft::WRL::ComPtr<ID3D12RootSignature> m_rootSignature;

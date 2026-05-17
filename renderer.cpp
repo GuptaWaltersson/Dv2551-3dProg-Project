@@ -21,6 +21,8 @@ Renderer::Renderer()
 
 Renderer::~Renderer()
 {
+	waitForGpuShutdown();
+	CloseHandle(m_fenceEvent);
 }
 
 bool Renderer::Setup(HINSTANCE instance, int nCmdShow, size_t window_width, size_t window_height) 
@@ -172,28 +174,30 @@ bool Renderer::Setup(HINSTANCE instance, int nCmdShow, size_t window_width, size
 
 void Renderer::renderFrame()
 {
-	m_commandAllocator->Reset();
-	m_commandList->Reset(m_commandAllocator.Get(), nullptr);
+
+	m_frameIndex = m_swapChain->GetCurrentBackBufferIndex();
+	if (m_fence->GetCompletedValue() < m_frameFenceValues[m_frameIndex])
+	{
+		m_fence->SetEventOnCompletion(m_frameFenceValues[m_frameIndex], m_fenceEvent);
+
+		WaitForSingleObject(m_fenceEvent, INFINITE);
+	}
+	
+	auto& allocator = m_commandAllocators[m_frameIndex];
+
+	allocator->Reset();
+	m_commandList->Reset(allocator.Get(), nullptr);
 
 	ID3D12Resource* currentBuffer = m_backBuffers[m_frameIndex].Get();
 	//Transistion
 
 	D3D12_RESOURCE_BARRIER barrier = {};
 
-	barrier.Type =
-		D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
-
-	barrier.Transition.pResource =
-		currentBuffer;
-
-	barrier.Transition.StateBefore =
-		D3D12_RESOURCE_STATE_PRESENT;
-
-	barrier.Transition.StateAfter =
-		D3D12_RESOURCE_STATE_RENDER_TARGET;
-
-	barrier.Transition.Subresource =
-		D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
+	barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+	barrier.Transition.pResource = currentBuffer;
+	barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_PRESENT;
+	barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_RENDER_TARGET;
+	barrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
 	//Record
 	m_commandList->ResourceBarrier(1, &barrier);
 	m_commandList->OMSetRenderTargets(1, &m_rtvHandles[m_frameIndex], FALSE, nullptr);
@@ -243,6 +247,10 @@ void Renderer::renderFrame()
 		1,
 		lists);
 
+	m_directQueue->Signal(m_fence.Get(), ++m_fenceValue);
+
+	m_frameFenceValues[m_frameIndex] = m_fenceValue;
+
 	//Present
 	m_swapChain->Present(
 		1,
@@ -252,19 +260,21 @@ void Renderer::renderFrame()
 		m_swapChain->GetCurrentBackBufferIndex();
 	
 	// WE WILL REMOVE THIS SINCE IT IS NOT OKAY FOR ASSIGNMENT JUST BEGINNER VERSION
-	m_fenceValue++;
+	UINT currentFence = ++m_fenceValue;
+	m_directQueue->Signal(m_fence.Get(), currentFence);
+	m_frameFenceValues[m_frameIndex] = currentFence;
+}
 
-	m_directQueue->Signal(m_fence.Get(),m_fenceValue);
+void Renderer::waitForGpuShutdown()
+{
+	m_fenceValue++;
+	m_directQueue->Signal(m_fence.Get(), m_fenceValue);
 
 	if (m_fence->GetCompletedValue() < m_fenceValue)
 	{
-		m_fence->SetEventOnCompletion(
-			m_fenceValue,
-			m_fenceEvent);
+		m_fence->SetEventOnCompletion(m_fenceValue, m_fenceEvent);
 
-		WaitForSingleObject(
-			m_fenceEvent,
-			INFINITE);
+		WaitForSingleObject(m_fenceEvent, INFINITE);
 	}
 }
 
@@ -382,13 +392,21 @@ bool Renderer::createSwapchain()
 
 bool Renderer::createCommandAllocator()
 {
-	HRESULT hr = m_device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&m_commandAllocator));
+	HRESULT hr;
+	for (UINT i = 0; i < FrameCount; i++)
+	{
+		hr = m_device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&m_commandAllocators[i]));
+		if (FAILED(hr))
+		{
+			return false;
+		}
+	}
 	return SUCCEEDED(hr);
 }
 
 bool Renderer::createCommandList()
 {
-	HRESULT hr = m_device->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, m_commandAllocator.Get(), nullptr, IID_PPV_ARGS(&m_commandList));
+	HRESULT hr = m_device->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, m_commandAllocators[0].Get(), nullptr, IID_PPV_ARGS(&m_commandList));
 	if (FAILED(hr))
 	{
 		return false;
