@@ -1,7 +1,5 @@
 #include "Shader.hpp"
-#include <iostream>
-#include <d3dcompiler.h>
-#pragma comment(lib, "d3dcompiler.lib")
+
 
 bool Shader::Load(const wchar_t* file, const char* entry, const char* target)
 {

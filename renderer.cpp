@@ -121,11 +121,24 @@ bool Renderer::Setup(HINSTANCE instance, int nCmdShow, size_t window_width, size
 		return false;
 	}
 
+	if (!m_vertexShader.Load(L"vertexShader.hlsl", "main", "vs_5_0"))
+	{
+		std::cout << "[RENDERER] Failed to load vertex shader" << std::endl;
+		return false;
+	}
+
+	if (!m_pixelShader.Load(L"pixelShader.hlsl", "main", "ps_5_0"))
+	{
+		std::cout << "[RENDERER] Failed to load pixel shader" << std::endl;
+		return false;
+	}
+
 	if (!createInputLayout())
 	{
 		std::cout << "[RENDERER] Failed to create input layout" << std::endl;
 		return false;
 	}
+	
 
 	
 #ifdef Guptadebug
@@ -416,6 +429,29 @@ bool Renderer::createInputLayout()
 
 
 	return true;
+}
+
+bool Renderer::createPipelineState()
+{
+	D3D12_GRAPHICS_PIPELINE_STATE_DESC psDesc = {};
+
+	psDesc.pRootSignature = m_rootSignature.Get();
+	
+	psDesc.VS = m_vertexShader.GetShaderByteCode();
+	psDesc.PS = m_pixelShader.GetShaderByteCode();
+
+	psDesc.InputLayout = m_inputLayout;
+
+	psDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
+
+	psDesc.NumRenderTargets = 1; // Är connectad till swapchain på nåt sätt
+	psDesc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;
+
+	psDesc.SampleDesc.Count = 1;
+
+	
+
+	return false;
 }
 
 D3D12_CPU_DESCRIPTOR_HANDLE Renderer::allocateSrvUavDescriptor()

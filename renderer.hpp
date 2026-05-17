@@ -6,8 +6,11 @@
 #include <d3d12.h>
 #include <dxgi1_6.h>
 #include <vector>
-
+#include "Shader.hpp"
 #include "structuredBuffer.hpp"
+
+
+
 class Renderer
 {
 public:
@@ -27,8 +30,9 @@ public:
 	bool createCommandList();
 	bool createFence();
 	bool createRootSignature();
-	
 	bool createInputLayout();
+	bool createPipelineState();
+
 	D3D12_CPU_DESCRIPTOR_HANDLE allocateSrvUavDescriptor();
 	D3D12_CPU_DESCRIPTOR_HANDLE allocateRtvDescriptor();
 private:
@@ -69,5 +73,9 @@ private:
 
 	std::vector<D3D12_INPUT_ELEMENT_DESC> m_inputElement;
 	D3D12_INPUT_LAYOUT_DESC m_inputLayout;
+	Shader m_vertexShader;
+	Shader m_pixelShader;
+
+	Microsoft::WRL::ComPtr<ID3D12PipelineState> m_pipelineState;
 
 };
