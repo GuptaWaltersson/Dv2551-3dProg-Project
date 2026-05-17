@@ -8,7 +8,7 @@
 #include <vector>
 #include "Shader.hpp"
 #include "structuredBuffer.hpp"
-
+#include "vertexBuffer.hpp"
 
 
 class Renderer
@@ -35,6 +35,10 @@ public:
 
 	D3D12_CPU_DESCRIPTOR_HANDLE allocateSrvUavDescriptor();
 	D3D12_CPU_DESCRIPTOR_HANDLE allocateRtvDescriptor();
+	D3D12_RASTERIZER_DESC createRasterizerDesc();
+	D3D12_BLEND_DESC createBlendStateDesc();
+	D3D12_VIEWPORT createViewport();
+	D3D12_RECT createScissor();
 private:
 	HWND m_window = nullptr;
 
@@ -78,4 +82,5 @@ private:
 
 	Microsoft::WRL::ComPtr<ID3D12PipelineState> m_pipelineState;
 
+	vertexBuffer m_vertexBuffer;
 };

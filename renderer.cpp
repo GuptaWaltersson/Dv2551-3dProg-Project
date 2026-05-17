@@ -4,9 +4,16 @@
 #include <iostream>
 #include <d3d12.h>
 #include <wrl.h>
+#include <DirectXMath.h>
 #include "Shader.hpp"
 
 #define Guptadebug
+
+struct Vertex {
+	DirectX::XMFLOAT3 position;
+	DirectX::XMFLOAT3 color;
+};
+
 Renderer::Renderer()
 {
 	
@@ -140,6 +147,22 @@ bool Renderer::Setup(HINSTANCE instance, int nCmdShow, size_t window_width, size
 	}
 	
 
+	Vertex vertices[] = {
+		{{0.0f,0.5f,0.0f},{0.0f,1.0f,0.0f}},
+		{{0.5f,-0.5f,0.0f},{1.0f,0.0f,0.0f}},
+		{{-0.5f,-0.5f,0.0f},{0.0f,0.0f,1.0f}}
+	};
+	if (!m_vertexBuffer.Initialize(m_device.Get(), vertices, sizeof(Vertex), 3))
+	{
+		std::cout << "[RENDERER] Failed to create vertexBuffer" << std::endl;
+		return false;
+	}
+
+	if (!createPipelineState())
+	{
+		std::cout << "[RENDERER] Failed to create pipeline state" << std::endl;
+		return false;
+	}
 	
 #ifdef Guptadebug
 	std::cout << "Renderer Setup success" << std::endl;
@@ -185,6 +208,17 @@ void Renderer::renderFrame()
 	};
 	m_commandList->ClearRenderTargetView(m_rtvHandles[m_frameIndex], clearColor, 0, nullptr);
 
+	D3D12_VIEWPORT vp = createViewport();
+	D3D12_RECT scissor = createScissor();
+	m_commandList->RSSetViewports(1, &vp);
+	m_commandList->RSSetScissorRects(1, &scissor);
+
+	m_commandList->SetPipelineState(m_pipelineState.Get());
+	m_commandList->SetGraphicsRootSignature(m_rootSignature.Get());
+	m_commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+	m_commandList->IASetVertexBuffers(0, 1, &m_vertexBuffer.GetView());
+	m_commandList->DrawInstanced(3, 1, 0, 0);
 	//Transition back
 	barrier.Transition.StateBefore =
 		D3D12_RESOURCE_STATE_RENDER_TARGET;
@@ -383,8 +417,12 @@ bool Renderer::createFence()
 bool Renderer::createRootSignature()
 {
 	D3D12_ROOT_SIGNATURE_DESC rootDesc = {};
-
 	rootDesc.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
+
+	rootDesc.NumParameters = 0;
+	rootDesc.pParameters = nullptr;
+	rootDesc.NumStaticSamplers = 0;
+	rootDesc.pStaticSamplers = nullptr;
 	Microsoft::WRL::ComPtr<ID3DBlob> signature;
 	Microsoft::WRL::ComPtr<ID3DBlob> error;
 	
@@ -434,7 +472,11 @@ bool Renderer::createInputLayout()
 bool Renderer::createPipelineState()
 {
 	D3D12_GRAPHICS_PIPELINE_STATE_DESC psDesc = {};
-
+	psDesc.SampleMask = UINT_MAX;
+	psDesc.NumRenderTargets = 1;
+	psDesc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;
+	psDesc.SampleDesc.Count = 1;
+	psDesc.DSVFormat = DXGI_FORMAT_UNKNOWN;
 	psDesc.pRootSignature = m_rootSignature.Get();
 	
 	psDesc.VS = m_vertexShader.GetShaderByteCode();
@@ -449,9 +491,17 @@ bool Renderer::createPipelineState()
 
 	psDesc.SampleDesc.Count = 1;
 
-	
+	psDesc.RasterizerState = createRasterizerDesc();
+	psDesc.BlendState = createBlendStateDesc();
 
-	return false;
+	psDesc.DepthStencilState.DepthEnable = FALSE;
+	psDesc.DepthStencilState.StencilEnable = FALSE; // Change when we creaate depthbuffers
+
+	psDesc.SampleMask = UINT_MAX;
+	
+	HRESULT hr = m_device->CreateGraphicsPipelineState(&psDesc, IID_PPV_ARGS(&m_pipelineState));
+
+	return SUCCEEDED(hr);
 }
 
 D3D12_CPU_DESCRIPTOR_HANDLE Renderer::allocateSrvUavDescriptor()
@@ -470,4 +520,66 @@ D3D12_CPU_DESCRIPTOR_HANDLE Renderer::allocateRtvDescriptor()
 	handle.ptr += m_rtvHeapOffset * m_rtvdescriptorSize;
 	m_rtvHeapOffset++;
 	return handle;
+}
+
+D3D12_RASTERIZER_DESC Renderer::createRasterizerDesc()
+{
+	D3D12_RASTERIZER_DESC desc;
+	desc.FillMode = D3D12_FILL_MODE_SOLID;
+	desc.CullMode = D3D12_CULL_MODE_BACK;
+	desc.FrontCounterClockwise = FALSE;
+	desc.DepthBias = D3D12_DEFAULT_DEPTH_BIAS;
+	desc.DepthBiasClamp = D3D12_DEFAULT_DEPTH_BIAS_CLAMP;
+	desc.SlopeScaledDepthBias = D3D12_DEFAULT_SLOPE_SCALED_DEPTH_BIAS;
+	desc.DepthClipEnable = TRUE;
+	desc.MultisampleEnable = FALSE;
+	desc.AntialiasedLineEnable = FALSE;
+	desc.ForcedSampleCount = 0;
+	desc.ConservativeRaster = D3D12_CONSERVATIVE_RASTERIZATION_MODE_OFF;
+
+	return desc;
+}
+
+D3D12_BLEND_DESC Renderer::createBlendStateDesc()
+{
+	D3D12_BLEND_DESC desc = {};
+	desc.AlphaToCoverageEnable = FALSE;
+	desc.IndependentBlendEnable = FALSE;
+
+	const D3D12_RENDER_TARGET_BLEND_DESC defaultRenderBlend =
+	{
+		FALSE,FALSE,
+		D3D12_BLEND_ONE,
+		D3D12_BLEND_ZERO,
+		D3D12_BLEND_OP_ADD,
+		D3D12_BLEND_ONE,
+		D3D12_BLEND_ZERO,
+		D3D12_BLEND_OP_ADD,
+		D3D12_LOGIC_OP_NOOP,
+		D3D12_COLOR_WRITE_ENABLE_ALL
+	};
+	desc.RenderTarget[0] = defaultRenderBlend;
+	return desc;
+}
+
+D3D12_VIEWPORT Renderer::createViewport()
+{
+	D3D12_VIEWPORT vp = {};
+	vp.TopLeftX = 0;
+	vp.TopLeftY = 0;
+	vp.Width = (float)m_width;
+	vp.Height = (float)m_height;
+	vp.MinDepth = 0.0f;
+	vp.MaxDepth = 1.0f;
+	return vp;
+}
+
+D3D12_RECT Renderer::createScissor()
+{
+	D3D12_RECT scissor = {};
+	scissor.left = 0;
+	scissor.top = 0;
+	scissor.right = m_width;
+	scissor.bottom = m_height;
+	return scissor;
 }
