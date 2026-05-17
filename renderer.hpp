@@ -5,6 +5,7 @@
 #include <wrl.h>
 #include <d3d12.h>
 #include <dxgi1_6.h>
+#include <vector>
 
 #include "structuredBuffer.hpp"
 class Renderer
@@ -26,7 +27,8 @@ public:
 	bool createCommandList();
 	bool createFence();
 	bool createRootSignature();
-
+	
+	bool createInputLayout();
 	D3D12_CPU_DESCRIPTOR_HANDLE allocateSrvUavDescriptor();
 	D3D12_CPU_DESCRIPTOR_HANDLE allocateRtvDescriptor();
 private:
@@ -64,5 +66,8 @@ private:
 	HANDLE m_fenceEvent;
 
 	Microsoft::WRL::ComPtr<ID3D12RootSignature> m_rootSignature;
+
+	std::vector<D3D12_INPUT_ELEMENT_DESC> m_inputElement;
+	D3D12_INPUT_LAYOUT_DESC m_inputLayout;
 
 };

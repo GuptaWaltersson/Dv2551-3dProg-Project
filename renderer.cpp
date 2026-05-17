@@ -120,6 +120,14 @@ bool Renderer::Setup(HINSTANCE instance, int nCmdShow, size_t window_width, size
 		std::cout << "[RENDERER] Failed to create root signature" << std::endl;
 		return false;
 	}
+
+	if (!createInputLayout())
+	{
+		std::cout << "[RENDERER] Failed to create input layout" << std::endl;
+		return false;
+	}
+
+	
 #ifdef Guptadebug
 	std::cout << "Renderer Setup success" << std::endl;
 #endif
@@ -376,6 +384,38 @@ bool Renderer::createRootSignature()
 
 	hr = m_device->CreateRootSignature(0, signature->GetBufferPointer(), signature->GetBufferSize(), IID_PPV_ARGS(&m_rootSignature));
 	return SUCCEEDED(hr);
+}
+
+bool Renderer::createInputLayout()
+{
+	m_inputElement =
+	{
+		{
+			"POSITION",
+			0,
+			DXGI_FORMAT_R32G32B32_FLOAT,
+			0,
+			0,
+			D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA,
+			0
+		},
+
+		{
+			"COLOR",
+			0,
+			DXGI_FORMAT_R32G32B32_FLOAT,
+			0,
+			12,
+			D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA,
+			0
+		}
+	};
+
+	m_inputLayout.pInputElementDescs = m_inputElement.data();
+	m_inputLayout.NumElements = m_inputElement.size();
+
+
+	return true;
 }
 
 D3D12_CPU_DESCRIPTOR_HANDLE Renderer::allocateSrvUavDescriptor()
