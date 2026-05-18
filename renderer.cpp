@@ -163,6 +163,19 @@ bool Renderer::Setup(HINSTANCE instance, int nCmdShow, size_t window_width, size
 		return false;
 	}
 
+	ParticleCollectionData particleData;
+	particleData.InitialPosition = { 0.0f,0.0f,0.0f,0.0f };
+	particleData.Velocity = { 0.0f,0.0f,0.0f };
+	particleData.nrParticle = 2;
+
+	ParticleCollection particleCollection;
+	if (!particleCollection.Initialize(m_device.Get(), particleData, srvHandle, uavHandle))
+	{
+		std::cout << "[RENDERER] Failed to create particle buffer" << std::endl;
+		return false;
+	}
+
+
 	if (!createPipelineState())
 	{
 		std::cout << "[RENDERER] Failed to create pipeline state" << std::endl;

@@ -9,7 +9,7 @@ public:
 	StructuredBuffer();
 	~StructuredBuffer();
 
-	bool Initialize(ID3D12Device* device, UINT elementCount, UINT elementSize, bool hasUAV, bool hasSRV);
+	bool Initialize(ID3D12Device* device, UINT elementCount, UINT elementSize, bool hasUAV, bool hasSRV, D3D12_CPU_DESCRIPTOR_HANDLE srvHandle, D3D12_CPU_DESCRIPTOR_HANDLE uavHandle);
 
 	ID3D12Resource* GetResource() const;
 	

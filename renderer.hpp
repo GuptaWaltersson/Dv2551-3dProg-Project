@@ -7,7 +7,7 @@
 #include <dxgi1_6.h>
 #include <vector>
 #include "Shader.hpp"
-#include "structuredBuffer.hpp"
+#include "ParticleCollection.hpp"
 #include "vertexBuffer.hpp"
 
 

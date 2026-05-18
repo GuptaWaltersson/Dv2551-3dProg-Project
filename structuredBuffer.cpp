@@ -9,10 +9,12 @@ StructuredBuffer::~StructuredBuffer()
 {
 }
 
-bool StructuredBuffer::Initialize(ID3D12Device* device, UINT elementCount, UINT elementSize, bool hasUAV, bool hasSRV)
+bool StructuredBuffer::Initialize(ID3D12Device* device, UINT elementCount, UINT elementSize, bool hasUAV, bool hasSRV, D3D12_CPU_DESCRIPTOR_HANDLE srvHandle, D3D12_CPU_DESCRIPTOR_HANDLE uavHandle)
 {
 	m_elementCount = elementCount;
 	m_elementSize = elementSize;
+	m_srvHandle = srvHandle;
+	m_uavHandle = uavHandle;
 
 	UINT64 bufferSize = m_elementCount * m_elementSize;
 	D3D12_HEAP_PROPERTIES heapProp = {};
