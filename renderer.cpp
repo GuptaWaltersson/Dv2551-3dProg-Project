@@ -64,8 +64,6 @@ bool Renderer::Setup(HINSTANCE instance, int nCmdShow, size_t window_width, size
 		m_swapChain->GetBuffer(i, IID_PPV_ARGS(&m_backBuffers[i]));
 	}
 
-
-
 	m_SrvUavdescriptorSize = m_device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 	m_rtvdescriptorSize = m_device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
 
@@ -165,7 +163,7 @@ bool Renderer::Setup(HINSTANCE instance, int nCmdShow, size_t window_width, size
 
 	ParticleCollectionData particleData;
 	particleData.InitialPosition = { 0.0f,0.0f,0.0f,0.0f };
-	particleData.Velocity = { 0.0f,0.0f,0.0f };
+	particleData.Velocity = { 0.0f,0.0f,0.0f,0.0f };
 	particleData.nrParticle = 2;
 
 	ParticleCollection particleCollection;

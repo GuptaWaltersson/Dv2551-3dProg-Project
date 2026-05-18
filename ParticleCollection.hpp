@@ -5,8 +5,8 @@
 #include "structuredBuffer.hpp"
 struct ParticleCollectionData
 {
-	DirectX::XMFLOAT4 InitialPosition;
-	DirectX::XMFLOAT3 Velocity;
+	DirectX::XMFLOAT4 InitialPosition = { 0, 0, 0, 0};
+	DirectX::XMFLOAT4 Velocity = { 0, 0, 0, 0};
 	UINT nrParticle = 0;
 	float lifetime = -1.0f;
 };
@@ -23,8 +23,10 @@ private:
 	{
 		DirectX::XMFLOAT4 InitialPosition;
 		DirectX::XMFLOAT4 Position;
-		DirectX::XMFLOAT3 Velocity;
+		DirectX::XMFLOAT4 Velocity;
 		float lifetime;
+
+		float padding[3];
 	};
 	std::vector<ParticleData> m_initialData;
 	StructuredBuffer m_structureBuffer;
