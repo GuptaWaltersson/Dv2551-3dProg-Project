@@ -39,6 +39,9 @@
     <ClCompile Include="Shader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="constantBuffer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="windowhelper.hpp">
@@ -62,9 +65,13 @@
     <ClInclude Include="Shader.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="constantBuffer.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="vertexShader.hlsl" />
     <FxCompile Include="pixelShader.hlsl" />
+    <FxCompile Include="GeometryParticleShader.hlsl" />
   </ItemGroup>
 </Project>

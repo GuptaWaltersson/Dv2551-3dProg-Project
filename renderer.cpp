@@ -150,11 +150,14 @@ bool Renderer::Setup(HINSTANCE instance, int nCmdShow, size_t window_width, size
 	
 
 	Vertex vertices[] = {
-		{{0.0f,0.5f,0.0f},{0.0f,1.0f,0.0f}},
-		{{0.5f,-0.5f,0.0f},{1.0f,0.0f,0.0f}},
-		{{-0.5f,-0.5f,0.0f},{0.0f,0.0f,1.0f}}
+		{{0.5f,0.5f,0.0f},{1.0f,1.0f,1.0f}},
+		{{0.5f,-0.5f,0.0f},{0.5f,0.5f,0.5f}},
+		{{-0.5f,-0.5f,0.0f},{0.2f,0.2f,0.2f}},
+		{{0.5f,0.5f,0.0f},{1.0f,1.0f,1.0f}},
+		{{-0.5f,-0.5f,0.0f},{0.2f,0.2f,0.2f}},
+		{{-0.5f,0.5f,0.0f},{0.5f,0.5f,0.5f}}
 	};
-	if (!m_vertexBuffer.Initialize(m_device.Get(), vertices, sizeof(Vertex), 3))
+	if (!m_vertexBuffer.Initialize(m_device.Get(), vertices, sizeof(Vertex), 6))
 	{
 		std::cout << "[RENDERER] Failed to create vertexBuffer" << std::endl;
 		return false;
@@ -222,7 +225,7 @@ void Renderer::renderFrame()
 	m_commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
 	m_commandList->IASetVertexBuffers(0, 1, &m_vertexBuffer.GetView());
-	m_commandList->DrawInstanced(3, 1, 0, 0);
+	m_commandList->DrawInstanced(6, 1, 0, 0);
 	//Transition back
 	barrier.Transition.StateBefore =
 		D3D12_RESOURCE_STATE_RENDER_TARGET;
