@@ -273,7 +273,6 @@ void Renderer::renderFrame()
 	m_frameIndex =
 		m_swapChain->GetCurrentBackBufferIndex();
 	
-	// WE WILL REMOVE THIS SINCE IT IS NOT OKAY FOR ASSIGNMENT JUST BEGINNER VERSION
 	UINT currentFence = ++m_fenceValue;
 	m_directQueue->Signal(m_fence.Get(), currentFence);
 	m_frameFenceValues[m_frameIndex] = currentFence;
