@@ -7,11 +7,15 @@
 #include <DirectXMath.h>
 #include "Shader.hpp"
 
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
+
 #define Guptadebug
 
 struct Vertex {
 	DirectX::XMFLOAT3 position;
 	DirectX::XMFLOAT3 color;
+	DirectX::XMFLOAT2 uv;
 };
 
 Renderer::Renderer()
@@ -148,12 +152,12 @@ bool Renderer::Setup(HINSTANCE instance, int nCmdShow, size_t window_width, size
 	
 
 	Vertex vertices[] = {
-		{{0.5f,0.5f,0.0f},{1.0f,1.0f,1.0f}},
-		{{0.5f,-0.5f,0.0f},{0.5f,0.5f,0.5f}},
-		{{-0.5f,-0.5f,0.0f},{0.2f,0.2f,0.2f}},
-		{{0.5f,0.5f,0.0f},{1.0f,1.0f,1.0f}},
-		{{-0.5f,-0.5f,0.0f},{0.2f,0.2f,0.2f}},
-		{{-0.5f,0.5f,0.0f},{0.5f,0.5f,0.5f}}
+		{{0.5f,0.5f,0.0f},{1.0f,1.0f,1.0f},{1.0f,0.0f}},
+		{{0.5f,-0.5f,0.0f},{0.5f,0.5f,0.5f},{1.0f,1.0f}},
+		{{-0.5f,-0.5f,0.0f},{0.2f,0.2f,0.2f},{0.0f,1.0f}},
+		{{0.5f,0.5f,0.0f},{1.0f,1.0f,1.0f},{1.0f,0.0f}},
+		{{-0.5f,-0.5f,0.0f},{0.2f,0.2f,0.2f},{0.0f,1.0f}},
+		{{-0.5f,0.5f,0.0f},{0.5f,0.5f,0.5f},{0.0f,0.0f}}
 	};
 	if (!m_vertexBuffer.Initialize(m_device.Get(), vertices, sizeof(Vertex), 6))
 	{
@@ -562,6 +566,16 @@ bool Renderer::createInputLayout()
 			"COLOR",
 			0,
 			DXGI_FORMAT_R32G32B32_FLOAT,
+			0,
+			12,
+			D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA,
+			0
+		},
+
+		{
+			"UV",
+			0,
+			DXGI_FORMAT_R32G32_FLOAT,
 			0,
 			12,
 			D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA,

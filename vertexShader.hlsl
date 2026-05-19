@@ -8,12 +8,14 @@ struct VSInput
 {
     float3 position : POSITION;
     float3 color : COLOR;
+    float2 uv : UV;
 };
 
 struct PSInput
 {
     float4 position : SV_POSITION;
     float3 color : COLOR;
+    float2 uv : UV;
 };
 
 PSInput main(VSInput input)
@@ -34,6 +36,8 @@ PSInput main(VSInput input)
             projection);
 
     output.color = input.color;
+    
+    output.uv = input.uv;
 
     return output;
 }

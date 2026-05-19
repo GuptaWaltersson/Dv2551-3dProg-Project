@@ -143,6 +143,7 @@
     <ClInclude Include="ParticleCollection.hpp" />
     <ClInclude Include="renderer.hpp" />
     <ClInclude Include="Shader.hpp" />
+    <ClInclude Include="stb_image.h" />
     <ClInclude Include="structuredBuffer.hpp" />
     <ClInclude Include="vertexBuffer.hpp" />
     <ClInclude Include="windowhelper.hpp" />
