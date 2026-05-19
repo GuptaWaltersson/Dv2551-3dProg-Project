@@ -12,3 +12,8 @@ bool particleRenderer::Initialize()
 {
 	return false;
 }
+
+bool particleRnderer::createParticlePipelineState()
+{
+	return false;
+}
