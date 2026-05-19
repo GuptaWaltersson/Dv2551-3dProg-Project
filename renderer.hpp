@@ -11,6 +11,7 @@
 #include "vertexBuffer.hpp"
 #include "camera.hpp"
 #include "constantBuffer.hpp"
+#include "ParticleRenderer.hpp"
 struct CameraConstantBuffer
 {
 	DirectX::XMFLOAT4X4 viewMatrix;

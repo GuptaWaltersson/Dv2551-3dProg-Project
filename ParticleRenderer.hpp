@@ -4,6 +4,7 @@
 #include <iostream>
 #include <wrl.h>
 #include "ParticleCollection.hpp"
+
 class particleRenderer
 {
 public:
@@ -13,7 +14,7 @@ public:
 	bool Initialize();
 
 	bool createParticlePipelineState();
-
+	bool createRootSignature();
 	void draw(ID3D12GraphicsCommandList* commandList, ParticleCollection& particles);
 
 private:
