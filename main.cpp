@@ -1,7 +1,7 @@
 
 #include <Windows.h>
 #include <iostream>
-
+#include <chrono>
 #include "renderer.hpp"
 
 #define GuptaDebug
@@ -21,15 +21,23 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
     Renderer renderer;
     renderer.Setup(hInstance, nCmdShow, 1080, 720);
 
+
+    auto previousFrame = std::chrono::high_resolution_clock::now();
     MSG msg = {};
     while (msg.message != WM_QUIT && !(GetKeyState(VK_ESCAPE) & 0x8000))
     {
+        auto currentFrame = std::chrono::high_resolution_clock::now();
+        std::chrono::duration<float> frametime = currentFrame - previousFrame;
+        previousFrame = currentFrame;
+
         if (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
         {
             TranslateMessage(&msg);
             DispatchMessage(&msg);
-            renderer.renderFrame();
         }
+        renderer.Movement(frametime.count());
+        renderer.renderFrame((float)frametime.count());
+        //std::cout << frametime.count() << std::endl;
     }
     return 0;
 }

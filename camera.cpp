@@ -20,6 +20,40 @@ void Camera::move(float x, float y, float z)
 	m_cameraPosition.z += z;
 }
 
+void Camera::moveForward(float amount)
+{
+	DirectX::XMVECTOR forward = DirectX::XMVectorSet(
+		sinf(m_yaw),
+		0,
+		cosf(m_yaw),
+		0
+	);
+
+	DirectX::XMVECTOR pos = DirectX::XMLoadFloat3(&m_cameraPosition);
+	pos = DirectX::XMVectorAdd(DirectX::XMVectorScale(forward,amount), pos);
+
+	DirectX::XMStoreFloat3(&m_cameraPosition, pos);
+}
+
+void Camera::moveRight(float amount)
+{
+	DirectX::XMVECTOR right = DirectX::XMVectorSet(
+		cosf(m_yaw),
+		0,
+		-sinf(m_yaw),
+		0
+	);
+
+	DirectX::XMVECTOR pos = DirectX::XMLoadFloat3(&m_cameraPosition);
+	pos = DirectX::XMVectorAdd(DirectX::XMVectorScale(right,amount), pos);
+	DirectX::XMStoreFloat3(&m_cameraPosition, pos);
+}
+
+void Camera::moveUp(float amount)
+{
+	m_cameraPosition.y += amount;
+}
+
 void Camera::rotate(float pitch, float yaw)
 {
 	m_pitch += pitch;

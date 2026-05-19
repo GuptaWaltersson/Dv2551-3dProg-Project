@@ -9,6 +9,11 @@ public:
 	
 	void SetPosition(float x, float y, float z);
 	void move(float x, float y, float z);
+
+	void moveForward(float amount);
+	void moveRight(float amount);
+	void moveUp(float amount);
+
 	void rotate(float pitch, float yaw);
 
 	DirectX::XMMATRIX getViewMatrix() const;

@@ -25,7 +25,8 @@ public:
 	
 	bool Setup(HINSTANCE hinstance, int nCmdShow, size_t window_width, size_t window_height);
 
-	void renderFrame();
+	void renderFrame(float frameTime);
+	void Movement(float frameTime);
 	void waitForGpuShutdown();
 
 	bool createFactory();

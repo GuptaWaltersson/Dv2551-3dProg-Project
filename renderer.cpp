@@ -196,7 +196,54 @@ bool Renderer::Setup(HINSTANCE instance, int nCmdShow, size_t window_width, size
 	return true;
 }
 
-void Renderer::renderFrame()
+void Renderer::Movement(float frameTime)
+{
+	float speed = 1.0f * frameTime;
+	bool rotationOn = true;
+
+	if (GetAsyncKeyState('W') & 0x8000)
+		m_camera.moveForward(speed);
+
+	if (GetAsyncKeyState('S') & 0x8000)
+		m_camera.moveForward(-speed);
+
+	if (GetAsyncKeyState('D') & 0x8000)
+		m_camera.moveRight(speed);
+
+	if (GetAsyncKeyState('A') & 0x8000)
+		m_camera.moveRight(-speed);
+
+	if (GetAsyncKeyState(VK_SPACE) & 0x8000)
+		m_camera.moveUp(speed);
+
+	if (GetAsyncKeyState(VK_CONTROL) & 0x8000)
+		m_camera.moveUp(-speed);
+
+	if (GetAsyncKeyState('E') & 0x8000)
+		rotationOn = false;
+
+	if (rotationOn)
+	{
+
+		POINT mouse_p;
+		GetCursorPos(&mouse_p);
+
+		POINT middlePoint;
+		middlePoint.x = m_width / 2;
+		middlePoint.y = m_height / 2;
+
+		ClientToScreen(m_window,&middlePoint);
+
+		int deltaX = mouse_p.x - middlePoint.x;
+		int deltaY = mouse_p.y - middlePoint.y;
+
+		m_camera.rotate(-deltaY * frameTime*0.08f, deltaX * frameTime*0.08f);
+		SetCursorPos(middlePoint.x, middlePoint.y);
+
+	}
+}
+
+void Renderer::renderFrame(float frameTime)
 {
 
 	m_frameIndex = m_swapChain->GetCurrentBackBufferIndex();
@@ -217,28 +264,6 @@ void Renderer::renderFrame()
 
 	ID3D12Resource* currentBuffer = m_backBuffers[m_frameIndex].Get();
 	//Transistion
-
-	//MOVEMENT move this somewhere more appropriate
-	float speed = 0.01f;
-
-	if (GetAsyncKeyState('W') & 0x8000)
-		m_camera.move(0,0,speed);
-
-	if (GetAsyncKeyState('S') & 0x8000)
-		m_camera.move(0,0,-speed);
-
-	if (GetAsyncKeyState('D') & 0x8000)
-		m_camera.move(speed,0,0);
-
-	if (GetAsyncKeyState('A') & 0x8000)
-		m_camera.move(-speed,0,0);
-
-	if (GetAsyncKeyState(VK_SPACE) & 0x8000)
-		m_camera.move(0,speed,0);
-
-	if (GetAsyncKeyState(VK_CONTROL) & 0x8000)
-		m_camera.move(0,-speed,0);
-
 
 	D3D12_RESOURCE_BARRIER barrier = {};
 
