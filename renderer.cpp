@@ -173,6 +173,16 @@ bool Renderer::Setup(HINSTANCE instance, int nCmdShow, size_t window_width, size
 		return false;
 	}
 
+	m_camera.SetPosition(0, 0, -3);
+	for (int i = 0; i < FrameCount; i++)
+	{
+		if (!m_cameraConstantBuffer[i].Initialize(m_device.Get(), sizeof(CameraConstantBuffer)))
+		{
+			std::cout << "[RENDERER] Failed to initialize constant buffers" << std::endl;
+			return false;
+		}
+	}
+
 
 	if (!createPipelineState())
 	{
@@ -197,13 +207,38 @@ void Renderer::renderFrame()
 		WaitForSingleObject(m_fenceEvent, INFINITE);
 	}
 	
-	auto& allocator = m_commandAllocators[m_frameIndex];
 
-	allocator->Reset();
-	m_commandList->Reset(allocator.Get(), nullptr);
+	m_commandAllocators[m_frameIndex]->Reset();
+	HRESULT hr = m_commandList->Reset(m_commandAllocators[m_frameIndex].Get(), nullptr);
+	if (FAILED(hr))
+	{
+		std::cout << "Failed to reset" << std::endl;
+	}
 
 	ID3D12Resource* currentBuffer = m_backBuffers[m_frameIndex].Get();
 	//Transistion
+
+	//MOVEMENT move this somewhere more appropriate
+	float speed = 0.01f;
+
+	if (GetAsyncKeyState('W') & 0x8000)
+		m_camera.move(0,0,speed);
+
+	if (GetAsyncKeyState('S') & 0x8000)
+		m_camera.move(0,0,-speed);
+
+	if (GetAsyncKeyState('D') & 0x8000)
+		m_camera.move(speed,0,0);
+
+	if (GetAsyncKeyState('A') & 0x8000)
+		m_camera.move(-speed,0,0);
+
+	if (GetAsyncKeyState(VK_SPACE) & 0x8000)
+		m_camera.move(0,speed,0);
+
+	if (GetAsyncKeyState(VK_CONTROL) & 0x8000)
+		m_camera.move(0,-speed,0);
+
 
 	D3D12_RESOURCE_BARRIER barrier = {};
 
@@ -215,6 +250,8 @@ void Renderer::renderFrame()
 	//Record
 	m_commandList->ResourceBarrier(1, &barrier);
 	m_commandList->OMSetRenderTargets(1, &m_rtvHandles[m_frameIndex], FALSE, nullptr);
+
+
 
 	//Choose background color
 	float clearColor[] =
@@ -234,6 +271,16 @@ void Renderer::renderFrame()
 	m_commandList->SetPipelineState(m_pipelineState.Get());
 	m_commandList->SetGraphicsRootSignature(m_rootSignature.Get());
 	m_commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+	//Camera
+	CameraConstantBuffer sceneCamera;
+	DirectX::XMStoreFloat4x4(&sceneCamera.projectionMatrix, DirectX::XMMatrixTranspose(m_camera.getProjectionMatrix((float)m_width / m_height)));
+	DirectX::XMStoreFloat4x4(&sceneCamera.viewMatrix, DirectX::XMMatrixTranspose(m_camera.getViewMatrix()));
+
+	m_cameraConstantBuffer[m_frameIndex].copyData(&sceneCamera, sizeof(sceneCamera));
+
+	m_commandList->SetGraphicsRootConstantBufferView(0, m_cameraConstantBuffer[m_frameIndex].getVirtualAddress());
+	//end of camera
 
 	m_commandList->IASetVertexBuffers(0, 1, &m_vertexBuffer.GetView());
 	m_commandList->DrawInstanced(6, 1, 0, 0);
@@ -273,9 +320,7 @@ void Renderer::renderFrame()
 	m_frameIndex =
 		m_swapChain->GetCurrentBackBufferIndex();
 	
-	UINT currentFence = ++m_fenceValue;
-	m_directQueue->Signal(m_fence.Get(), currentFence);
-	m_frameFenceValues[m_frameIndex] = currentFence;
+
 }
 
 void Renderer::waitForGpuShutdown()
@@ -450,8 +495,14 @@ bool Renderer::createRootSignature()
 	D3D12_ROOT_SIGNATURE_DESC rootDesc = {};
 	rootDesc.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
 
-	rootDesc.NumParameters = 0;
-	rootDesc.pParameters = nullptr;
+	D3D12_ROOT_PARAMETER params = {};
+	params.ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
+	params.Descriptor.ShaderRegister = 0;
+	params.Descriptor.RegisterSpace = 0;
+	params.ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX;
+
+	rootDesc.NumParameters = 1;
+	rootDesc.pParameters = &params;
 	rootDesc.NumStaticSamplers = 0;
 	rootDesc.pStaticSamplers = nullptr;
 	Microsoft::WRL::ComPtr<ID3DBlob> signature;

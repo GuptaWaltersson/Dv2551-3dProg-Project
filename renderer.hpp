@@ -9,7 +9,13 @@
 #include "Shader.hpp"
 #include "ParticleCollection.hpp"
 #include "vertexBuffer.hpp"
-
+#include "camera.hpp"
+#include "constantBuffer.hpp"
+struct CameraConstantBuffer
+{
+	DirectX::XMFLOAT4X4 viewMatrix;
+	DirectX::XMFLOAT4X4 projectionMatrix;
+};
 
 class Renderer
 {
@@ -84,4 +90,8 @@ private:
 	Microsoft::WRL::ComPtr<ID3D12PipelineState> m_pipelineState;
 
 	vertexBuffer m_vertexBuffer;
+
+	Camera m_camera;
+	CameraConstantBuffer m_cameraData;
+	constantBuffer m_cameraConstantBuffer[FrameCount];
 };
