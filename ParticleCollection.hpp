@@ -17,6 +17,8 @@ public:
 	~ParticleCollection();
 
 	bool Initialize(ID3D12Device* device, ParticleCollectionData& data, D3D12_CPU_DESCRIPTOR_HANDLE srvHandle, D3D12_CPU_DESCRIPTOR_HANDLE uavHandle);
+	D3D12_VERTEX_BUFFER_VIEW GetVertexView();
+	UINT getCount();
 private:
 	UINT m_particleCount = 0;
 	struct ParticleData

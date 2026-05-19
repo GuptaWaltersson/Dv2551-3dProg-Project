@@ -24,3 +24,13 @@ bool ParticleCollection::Initialize(ID3D12Device* device, ParticleCollectionData
 
 	return initSuccess;
 }
+
+D3D12_VERTEX_BUFFER_VIEW ParticleCollection::GetVertexView()
+{
+	return D3D12_VERTEX_BUFFER_VIEW();
+}
+
+UINT ParticleCollection::getCount()
+{
+	return 0;
+}

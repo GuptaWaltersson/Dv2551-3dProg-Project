@@ -13,8 +13,9 @@ public:
 
 	bool Initialize();
 
-	bool createParticlePipelineState();
-	bool createRootSignature();
+	bool createParticlePipelineState(ID3D12Device* device);
+	bool createRootSignature(ID3D12Device* device);
+	bool createInputLayout();
 	void draw(ID3D12GraphicsCommandList* commandList, ParticleCollection& particles);
 
 private:
@@ -24,5 +25,6 @@ private:
 
 	Microsoft::WRL::ComPtr<ID3D12PipelineState> m_pipelinestate;
 	Microsoft::WRL::ComPtr<ID3D12RootSignature> m_rootSignature;
+	std::vector<D3D12_INPUT_ELEMENT_DESC> m_inputElement;
 	D3D12_INPUT_LAYOUT_DESC m_inputLayout;
 };
